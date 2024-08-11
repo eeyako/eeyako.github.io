@@ -34,5 +34,5 @@ func om2Handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/cmds/", cmdsHandler)
 	http.HandleFunc("/om2/", om2Handler)
-	log.Fatal(http.ListenAndServe(":8100", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
