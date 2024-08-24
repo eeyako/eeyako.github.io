@@ -1,0 +1,16 @@
+body {
+    color: #4e6258;
+    text-align: center;
+    font-family: Roboto, sans-serif;
+}
+
+.title {
+    line-height: 22px;
+    font-size: 150%;
+    padding: 2rem 0;
+}
+
+.message {
+    font-size: 120%;
+
+}
