@@ -1,7 +1,7 @@
-const CMDS_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2024/ENU/Maya-Tech-Docs/CommandsPython'
-const MEL_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2024/ENU/Maya-Tech-Docs/Commands'
-const OM2_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2024/ENU/MAYA-API-REF/py_ref'
-const OM_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2024/ENU/MAYA-API-REF/cpp_ref'
+const CMDS_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/Maya-Tech-Docs/CommandsPython'
+const MEL_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/Maya-Tech-Docs/Commands'
+const OM2_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/py_ref'
+const OM_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/cpp_ref'
 const QT_ROOT_URL = 'https://doc.qt.io/qt-6'
 
 const title = document.querySelector(".title")
