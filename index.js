@@ -18,7 +18,7 @@ async function fetchAndGo(query, rootUrl, index, selector) {
 
     const a = obj.querySelectorAll(selector)
     for (let i = 0; i < a.length; i++) {
-        if (query == a[i].innerHTML.toLowerCase()) {
+        if (query == a[i].textContent.toLowerCase()) {
             const url = a[i].getAttribute("href")
 
             window.location.replace(`${rootUrl}/${url}`)
@@ -32,8 +32,8 @@ async function fetchAndGo(query, rootUrl, index, selector) {
 async function handleUrlParams() {
     const value = urlParams.entries().next()['value']
     if (!value) {
-        title.innerHTML = 'Error: no query requested'
-        message.innerHTML = 'Available queries are: cmds, mel, om2, om, qt'
+        title.textContent = 'Error: no query requested'
+        message.textContent = 'Available queries are: cmds, mel, om2, om, qt'
         return
     }
 
@@ -68,17 +68,17 @@ async function handleUrlParams() {
             window.location.replace(`${rootUrl}/${query}.html`)
             return
         default:
-            title.innerHTML = 'Error: Incorrect query'
-            message.innerHTML = 'Available queries are: cmds, mel, om2, om'
+            title.textContent = 'Error: Incorrect query'
+            message.textContent = 'Available queries are: cmds, mel, om2, om'
             return
     }
     const err = await fetchAndGo(query, rootUrl, index, selector)
     if (err == 1) {
-        title.innerHTML = 'Not found'
-        message.innerHTML = `Could not find "${query}" under "${param}"`
+        title.textContent = 'Not found'
+        message.textContent = `Could not find "${query}" under "${param}"`
     }
 }
 
 
-title.innerHTML = 'Searching...'
+title.textContent = 'Searching...'
 handleUrlParams()
