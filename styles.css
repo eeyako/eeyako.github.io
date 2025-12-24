@@ -1,17 +1,24 @@
 body {
-    background-color: #293038;
-    color: #abb2bf;
+    background-color: #24283b;
+    color: #73daca;
     text-align: center;
-    font-family: Roboto, sans-serif;
+    font-family: 'Liberation Mono', sans-serif;
 }
 
+
 .title {
+    color: #e0af68;
     line-height: 22px;
     font-size: 150%;
     padding: 2rem 0;
+    filter: opacity(0%);
+    transition: filter 0.2s ease-in-out;
 }
 
-.message {
-    font-size: 120%;
 
+.message {
+    color: #73daca;
+    font-size: 120%;
+    filter: opacity(0%);
+    transition: filter 0.2s ease-in-out;
 }
