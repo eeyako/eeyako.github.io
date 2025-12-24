@@ -4,8 +4,8 @@ const OM2_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/
 const OM_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/cpp_ref';
 const QT_ROOT_URL = 'https://doc.qt.io/qt-6';
 
-const title = document.querySelector(".title");
-const message = document.querySelector(".message");
+const title = document.querySelector('.title');
+const message = document.querySelector('.message');
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
