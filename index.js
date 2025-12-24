@@ -92,7 +92,7 @@ async function handleUrlParams() {
     if (!success) {
         setTimeout(() => {
             animateText(title, 'Not found');
-            setTimeout(() => { animateText(message, `Could not find "${query}" under "${param}"`); }, textTimeout);
+            setTimeout(() => { animateText(message, `Could not find '${query}' under '${param}'`); }, textTimeout);
         }, textTimeout);
     }
 }
