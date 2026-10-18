@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading Matrix Math</title>
+
+  <!-- Syntax highlighting for the C++ snippets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="title">
+      <h1>Reading Matrix Math</h1>
+    </header>
+
+    <p class="lead">If matrix order of operations feels like trial and error, the problem is almost never
+      the math. It is that the matrices are unnamed, so nothing tells you which coordinate space each one
+      lives in. This page gives you one mental model and a small set of patterns. With those, you derive the
+      order instead of guessing it.</p>
+
+    <h2>The mental model</h2>
+
+    <p>Do not think of a matrix as "a thing you multiply." Think of every matrix as a device that moves a
+      vector <strong>from one coordinate space into another</strong>: into a joint's rest space, into
+      world space, into a parent's frame. A chain of matrices is then a trip through spaces, and the spaces
+      tell you the order.</p>
+
+    <p>In Maya the trip always reads the same way. <code>MMatrix</code> is <strong>row-vector,
+        row-major</strong>: a point transforms as <i>p</i>&prime; = <i>p</i> &middot; <i>M</i>, so in a product
+      <i>A</i> &middot; <i>B</i> the matrix <i>A</i> is applied <strong>first</strong>. The leftmost matrix is the one that touches the vector
+      first. That means you read a chain <strong>left to right</strong>, exactly the order you write it in
+      code (<code>a * b</code>) and exactly the order Maya walks a transform hierarchy.</p>
+
+    <p>It helps to remember that an <code>MMatrix</code> is not abstract; it is what a transform
+      node collapses to: translate, rotate, scale, and joint orient folded into one object. When you multiply
+      two world matrices you are not doing algebra for its own sake, you are walking the DAG up or down the
+      rig.</p>
+
+    <h2>Order matters: matrices do not commute</h2>
+
+    <p>The entire reason you must think about order is that multiplying transforms is <strong>not
+        commutative</strong>: <i>A</i> &middot; <i>B</i> &ne; <i>B</i> &middot; <i>A</i>. Play with it. The grey shape is the original; the dots
+      mark where each order pivots (blue for the selected order).</p>
+
+    <div class="embed">
+      <iframe src="widgets/order_playground.html?v=3" title="Matrix order playground" loading="lazy"
+        onload="try{var d=this.contentDocument;this.style.height=(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight)+24)+'px';}catch(e){}"></iframe>
+    </div>
+
+    <p>A rotation (matrix A) and a translation (matrix B) are the simplest pair that disagree. In one order
+      the shape is rotated then slid; in the other it is slid then rotated, so it lands somewhere else
+      entirely. Every order mistake you have ever made is some version of this picture.</p>
+
+    <h2>Derive the order, do not memorize it</h2>
+
+    <p>Write an equation with the thing you know and the thing you want, then solve for the unknown using
+      inverses. An inverse simply reverses the trip: <i>A</i> &middot; <i>A</i><sup>&minus;1</sup> = <i>I</i>.</p>
+
+    <p>Say you want to compute a local matrix from a world matrix:</p>
+
+    <pre><code class="language-cpp">// By calculating the local matrix with the world and parent inverse, we automatically
+// take in to account whether the joint uses joint orient or not.
+MMatrix localMatrix = inMatrix * restMatrix.inverse();</code></pre>
+
+    <p>Read it as algebra, not as an idiom. You know the node's world matrix (<code>inMatrix</code>) and its
+      parent's world matrix (<code>restMatrix</code>). The composition rule is</p>
+
+    <div class="math-display"><i>world</i> = <i>local</i> &middot; <i>parent</i></div>
+
+    <p>so you solve for the unknown by multiplying both sides on the right by the parent inverse:</p>
+
+    <div class="math-display"><i>local</i> = <i>world</i> &middot; <i>parent</i><sup>&minus;1</sup></div>
+
+    <p>That is exactly <code>inMatrix * restMatrix.inverse()</code>. Nothing was memorized; the order fell
+      out of the equation.</p>
+
+    <h2>Hierarchy and parent-child chains</h2>
+
+    <p>Going <strong>down</strong> the tree (you know the local, you want the world):</p>
+
+    <div class="math-display"><i>world</i> = <i>local</i> &middot; <i>parent</i></div>
+
+    <p>Going <strong>up</strong> the tree (you know the world, you want the local):</p>
+
+    <div class="math-display"><i>local</i> = <i>world</i> &middot; <i>parent</i><sup>&minus;1</sup></div>
+
+    <p>Whenever you catch yourself unsure which side the inverse goes on, ask: <em>which space am I leaving, and which space am I entering?</em>
+      The matrix that takes you out of a space is that space's inverse.</p>
+
+    <h2>Offsets and constraints between two objects</h2>
+
+    <p>You already know the basic offset: the transform that takes object <em>A</em>'s space onto object
+      <em>B</em>'s space is</p>
+
+    <div class="math-display"><i>A</i> &rarr; <i>B</i> = <i>B</i><sub>world</sub> &middot; <i>A</i><sub>world</sub><sup>&minus;1</sup></div>
+
+    <p>That is the "offset between those two objects" formula you trust.</p>
+
+    <h3>The same offset as a vector</h3>
+
+    <p>Strip out the rotation and there is nothing new here. The offset between two things is "the second
+      one, with the first undone". For numbers, undoing is subtracting; for matrices, it is multiplying by
+      the inverse:</p>
+
+    <div class="math-display"><i>A</i><sub>vec</sub> &rarr; <i>B</i><sub>vec</sub> = <i>B</i><sub>vec</sub> &minus; <i>A</i><sub>vec</sub><br>
+    <i>A</i> &rarr; <i>B</i> = <i>B</i><sub>world</sub> &middot; <i>A</i><sub>world</sub><sup>&minus;1</sup></div>
+
+    <p>&minus;<i>A</i> is the additive inverse of <i>A</i> and <i>A</i><sup>&minus;1</sup> the
+      multiplicative one, so both lines say the same thing: reach <em>B</em>, then undo <em>A</em>. Putting
+      the offset back reverses it the same way:</p>
+
+    <div class="math-display"><i>B</i><sub>vec</sub> = (<i>B</i><sub>vec</sub> &minus; <i>A</i><sub>vec</sub>) + <i>A</i><sub>vec</sub><br>
+    <i>B</i> = (<i>B</i><sub>world</sub> &middot; <i>A</i><sub>world</sub><sup>&minus;1</sup>) &middot; <i>A</i><sub>world</sub></div>
+
+    <p>Addition commutes, so with vectors you never notice which side the offset sits on:
+      <i>A</i> + <i>d</i> = <i>d</i> + <i>A</i>. Matrix multiplication does not, and that is the whole
+      reason order-of-operations trips people up. The arithmetic is identical; only the sides start to
+      matter.</p>
+
+    <p>The more general and very common pattern is <strong>re-planting a rest-pose offset under a new
+        parent</strong>. Here is the pattern applied to a leg:</p>
+
+    <pre><code class="language-cpp">MMatrix upLegToWorld = upLegRestToWorld * hipsRestToWorld.inverse() * hipsToWorld;</code></pre>
+
+    <p>Read the chain as a sentence, left to right:</p>
+
+    <ol>
+      <li><code>upLegRestToWorld</code>: start in the up-leg's rest pose (world space).</li>
+      <li><code>* hipsRestToWorld.inverse()</code>: move into the hips' space, so what
+        remains is the up-leg's rest offset <em>relative to the hips</em>.</li>
+      <li><code>* hipsToWorld</code>: re-apply that offset using the hips' <strong>current</strong> matrix.</li>
+    </ol>
+
+    <p>So the offset was captured in one pose and then carried by the current parent. The same three-step
+      shape recurs for each joint down the chain: the lower leg under the up-leg, the foot under the
+      lower leg, and so on. Once you can name the space after each multiplication, these long chains stop
+      being opaque.</p>
+
+    <p>Watch a point take that trip. Rotate the parent and notice that the child's local offset is measured
+      <strong>along the parent's rotated axes</strong>, not the world's. That is what "local, then
+      parent" means.</p>
+
+    <div class="embed">
+      <iframe src="widgets/space_trip.html?v=7" title="A point's trip through spaces" loading="lazy"
+        onload="try{var d=this.contentDocument;this.style.height=(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight)+24)+'px';}catch(e){}"></iframe>
+    </div>
+
+    <h2>Inverse and change of basis (the sandwich)</h2>
+
+    <p>This is the pattern people find hardest, so here is the intuition before the algebra.</p>
+
+    <p><strong>A matrix can describe a coordinate system, not just a movement.</strong> The matrix
+      <code>C</code> is a whole set of axes: a position and an orientation. Think of <code>C</code> as the
+      frame's basis: it turns coordinates written <em>in</em> <code>C</code>'s frame into world
+      coordinates. Then the sandwich is</p>
+
+    <div class="math-display"><i>new</i> = <i>C</i><sup>&minus;1</sup> &middot; <i>old</i> &middot; <i>C</i></div>
+
+    <p>and it says: <em>"Apply <code>old</code>, but do it as if <code>C</code> were the entire
+        world."</em> You never change <code>old</code> itself. You only change the frame it is measured
+      against.</p>
+
+    <p>Read it as a point's round trip (in Maya the applied order is left to right):</p>
+
+    <ol>
+      <li><code>C<sup>&minus;1</sup></code>: take the point <strong>out of the world and into <code>C</code>'s
+          frame</strong>. Now <code>C</code>'s origin is the origin, and <code>C</code>'s axes are the axes.</li>
+      <li><code>old</code>: do the operation while you are standing inside <code>C</code>'s frame.</li>
+      <li><code>C</code>: come back out to the world.</li>
+    </ol>
+
+    <p>Because steps 1 and 3 undo each other's <em>frame change</em>, the net effect is "the operation
+      <code>old</code>, done in <code>C</code>'s coordinate system."</p>
+
+    <p>Which side the inverse sits on is the whole game. These two are <strong>not</strong> the same:</p>
+
+    <ul>
+      <li><i>C</i><sup>&minus;1</sup> &middot; <i>old</i> &middot; <i>C</i>: do <code>old</code> in <code>C</code>'s frame (the form above).</li>
+      <li><i>C</i> &middot; <i>old</i> &middot; <i>C</i><sup>&minus;1</sup>, the inverse conjugation: it <em>undoes</em> <code>old</code>
+        in <code>C</code>'s frame, which is the same as doing the operation in the mirrored frame.</li>
+    </ul>
+
+    <p>They are inverses of each other, since (<i>C</i><sup>&minus;1</sup> <i>old</i> <i>C</i>)<sup>&minus;1</sup> = <i>C</i><sup>&minus;1</sup> <i>old</i><sup>&minus;1</sup> <i>C</i>. Choose the
+      wrong side and your operation happens about the opposite centre, with the opposite orientation,
+      which is exactly the trial-and-error this page is trying to kill.</p>
+
+    <h3>The classic example: rotate about a pivot instead of the world origin</h3>
+
+    <p>Let the operation be a rotation <i>R</i>(&theta;), and let the frame <code>C</code> be a translation to a
+      pivot point <i>P</i>. Then <i>C</i><sup>&minus;1</sup> slides the whole scene by &minus;<i>P</i> so the pivot lands on the origin,
+      <i>R</i>(&theta;) spins about the origin, and <i>C</i> slides it back. Net result:</p>
+
+    <div class="math-display"><i>p</i>&prime; = <i>P</i> + <i>R</i>(&theta;) (<i>p</i> &minus; <i>P</i>)</div>
+
+    <p>That is a rotation about <i>P</i>, built entirely from the <em>same</em> rotation matrix you already
+      had. The other order, <i>C</i> &middot; <i>R</i>(&theta;) &middot; <i>C</i><sup>&minus;1</sup>, puts the inverse on the right, so the
+      identical rotation comes out about the mirrored centre &minus;<i>P</i>. Two pictures of the same idea:</p>
+
+    <figure class="diagram">
+      <img src="img/diagram_sandwich.svg" alt="Rotating about the world origin compared with rotating about a pivot">
+    </figure>
+
+    <p>Now feel it. Flip between the two conjugation orders, drag the pivot, then press <strong>Play the
+        three steps</strong> to watch the round trip happen one multiply at a time.</p>
+
+    <div class="embed">
+      <iframe src="widgets/sandwich_pivot.html?v=14" title="Change of basis: rotation about a pivot" loading="lazy"
+        onload="try{var d=this.contentDocument;this.style.height=(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight)+24)+'px';}catch(e){}"></iframe>
+    </div>
+
+    <h3>Rotation about a pivot, in code</h3>
+
+    <p>The three steps are literal. Let <code>C</code> be a translation to the pivot <i>P</i>, and let the
+      operation be a rotation:</p>
+
+    <pre><code class="language-cpp">MMatrix C;            // C is a translation to the pivot
+C[3][0] = pivot.x;
+C[3][1] = pivot.y;
+C[3][2] = pivot.z;
+
+p *= C.inverse();     // world -> pivot frame (the pivot is now the origin)
+p *= rotation;        // spin about the origin, which is the pivot
+p *= C;               // pivot frame -> world</code></pre>
+
+    <p>The rotation matrix never changes. Only the frame it is measured in does, and the pivot falls out
+      as the centre. Keep that enter/modify/leave rhythm; now swap the pivot frame for a bind frame.</p>
+
+    <h3>The same shape in code</h3>
+
+    <p>Here it is again, applied to a transform. <code>C</code> is a bind space rather than a pivot
+      point, but the enter/modify/leave shape is identical:</p>
+
+    <pre><code class="language-cpp">MMatrix worldToBind = ikRootToWorld.inverse() * flatFootBindToRoot.inverse();
+footTarget *= worldToBind;
+// ... scale the foot while it is expressed in the bind frame ...
+footTarget *= worldToBind.inverse();</code></pre>
+
+    <p>Read the factors before the order. <code>flatFootBindToRoot</code> is not the foot's transform:
+      it is the foot's rest spot with its rotation dropped and its height zeroed, a flat frame standing
+      on the ground in the root's space (the rig's rest root is the identity, so the foot's rest
+      <em>world</em> position doubles as its root-space position). <code>ikRootToWorld</code> is the
+      root's world matrix. So <code>C = flatFootBindToRoot * ikRootToWorld</code> carries that bind frame
+      out to the world, and <code>worldToBind</code> is just <code>C<sup>&minus;1</sup></code> written
+      out.</p>
+
+    <p>Because <i>(A B)</i><sup>&minus;1</sup> = <i>B</i><sup>&minus;1</sup> <i>A</i><sup>&minus;1</sup>, the two
+      factors trade places and each is inverted, which is why <code>ikRootToWorld</code> comes first and
+      <code>flatFootBindToRoot</code> last. The closing <code>worldToBind.inverse()</code> cancels the
+      frame change, leaving only the edit. In matrix terms this is the <i>C</i><sup>&minus;1</sup> &middot;
+      (...) &middot; <i>C</i> form, and the inverse is on the <strong>left</strong>, so the edit is done in
+      <code>C</code>'s frame.</p>
+
+    <p><strong>Deciding left vs. right for an inverse:</strong> an inverse that appears <em>before</em> the
+      matrix you are changing (on its left) moves you into a space; an inverse that appears <em>after</em> it
+      (on its right) undoes a matrix you are composing on top. When in doubt, name the spaces after each
+      multiply and check that the output space of one matrix is the input space of the next. An illegal
+      product (world space fed into something expecting local space) becomes obvious in the names.</p>
+
+    <h2>Two sanity checks</h2>
+
+    <p>Run these before you ever reach for trial and error.</p>
+
+    <p><strong>1. The identity test.</strong> Plug in "no change": the current pose equals the rest
+      pose. Any offset or delta you compute should collapse to the identity matrix. If it does not, your order
+      is wrong. For example, in the pattern above, setting <code>hipsToWorld</code> equal to
+      <code>hipsRestToWorld</code> makes the whole chain reduce to
+      <code>upLegRestToWorld</code>.</p>
+
+    <p><strong>2. The naming test.</strong> A matrix's name should describe the spaces it connects:
+      <code>worldToLocal</code>, <code>hipsFromUpLeg</code>, <code>xyzSpaceToWorld</code>. When the names
+      encode direction, a wrong product such as <code>worldToLocal * worldToLocal</code> is visibly illegal.
+      Most order-of-operations bugs are really naming bugs.</p>
+
+    <h2>Quick reference</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>When you want to...</th>
+          <th>Write (Maya, row-vector; left applies first)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Compose a child under its parent (local &rarr; world)</td>
+          <td><i>world</i> = <i>local</i> &middot; <i>parent</i></td>
+        </tr>
+        <tr>
+          <td>Go from world back to a local matrix</td>
+          <td><i>local</i> = <i>world</i> &middot; <i>parent</i><sup>&minus;1</sup></td>
+        </tr>
+        <tr>
+          <td>Get the offset from object A to object B</td>
+          <td><i>A</i> &rarr; <i>B</i> = <i>B</i><sub>world</sub> &middot; <i>A</i><sub>world</sub><sup>&minus;1</sup></td>
+        </tr>
+        <tr>
+          <td>Re-apply a rest offset under the current parent</td>
+          <td><i>offset</i><sub>rest</sub> = <i>childRest</i> &middot; <i>parentRest</i><sup>&minus;1</sup><br>then<br><i>offset</i><sub>rest</sub> &middot; <i>parent</i><sub>current</sub></td>
+        </tr>
+        <tr>
+          <td>Do <code>old</code> in a frame <code>C</code> (<code>C</code> maps frame &rarr; world)</td>
+          <td><i>new</i> = <i>C</i><sup>&minus;1</sup> &middot; <i>old</i> &middot; <i>C</i></td>
+        </tr>
+        <tr>
+          <td>Undo <code>old</code> in a frame <code>C</code> (the inverse conjugation)</td>
+          <td><i>new</i> = <i>C</i> &middot; <i>old</i> &middot; <i>C</i><sup>&minus;1</sup></td>
+        </tr>
+        <tr>
+          <td>Turn world into local for a non-parent reference</td>
+          <td><i>local</i> = <i>world</i> &middot; <i>reference</i><sup>&minus;1</sup></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="callout">Remember: the order is not a rule to memorize, it is the answer to the question
+      <em>"which space am I in now, and which space do I need next?"</em></p>
+
+  </div>
+
+  <script src="js/highlight.js"></script>
+</body>
+</html>

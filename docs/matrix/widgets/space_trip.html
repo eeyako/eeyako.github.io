@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A point's trip through spaces</title>
+  <link rel="stylesheet" href="../css/widgets.css">
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="cv" width="620" height="440"></canvas>
+    <div class="panel">
+      <h4>Which space am I in now?</h4>
+      <div class="group parent">Parent (P)</div>
+      <div class="row">
+        <label>rotate <output id="oPa">20&deg;</output></label>
+        <input id="pa" type="range" min="-180" max="180" value="20" step="1">
+      </div>
+      <div class="row">
+        <label>translate x <output id="oPtx">60</output></label>
+        <input id="ptx" type="range" min="-220" max="220" value="60" step="1">
+      </div>
+      <div class="row">
+        <label>translate y <output id="oPty">40</output></label>
+        <input id="pty" type="range" min="-160" max="160" value="40" step="1">
+      </div>
+      <div class="group">Child local (L)</div>
+      <div class="row">
+        <label>rotate <output id="oCa">0&deg;</output></label>
+        <input id="ca" type="range" min="-180" max="180" value="-50" step="1">
+      </div>
+      <div class="row">
+        <label>translate x <output id="oCtx">120</output></label>
+        <input id="ctx" type="range" min="-200" max="200" value="120" step="1">
+      </div>
+      <div class="row">
+        <label>translate y <output id="oCty">0</output></label>
+        <input id="cty" type="range" min="-160" max="160" value="0" step="1">
+      </div>
+      <button id="play" class="play">Play the trip</button>
+      <div class="legend">
+        <div><span class="sw" style="background:#9ece6a"></span>parent frame (world axes rotated by P)</div>
+        <div><span class="sw" style="background:#7aa2f7"></span>the point / shape</div>
+        <div class="tip">World = <em>L</em> then <em>P</em> (Maya: <code>local * parent</code>). The child offset is measured along the parent's rotated axes. Change the parent's rotation and the child swings with it.</div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/space_trip.js"></script>
+</body>
+</html>

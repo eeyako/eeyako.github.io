@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Change of basis: the sandwich</title>
+  <link rel="stylesheet" href="../css/widgets.css">
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="cv" width="620" height="440"></canvas>
+    <div class="panel">
+      <h4>Which side does the inverse go?</h4>
+      <div class="modes">
+        <button id="btnInv" class="active">C&#8315;&#185; &#183; T &#183; C<small>do T in C's frame</small></button>
+        <button id="btnFwd">C &#183; T &#183; C&#8315;&#185;<small>the inverse conjugation</small></button>
+      </div>
+      <div class="row">
+        <label>Rotation &theta; (operation T) <output id="oAng">90&deg;</output></label>
+        <input id="ang" type="range" min="-180" max="180" value="90" step="1">
+      </div>
+      <div class="row">
+        <label>Pivot x <output id="oPx">120</output></label>
+        <input id="px" type="range" min="-220" max="220" value="120" step="1">
+      </div>
+      <div class="row">
+        <label>Pivot y <output id="oPy">-20</output></label>
+        <input id="py" type="range" min="-160" max="160" value="-20" step="1">
+      </div>
+      <button id="play" class="play">Play the three steps</button>
+      <div class="legend">
+        <div><span class="sw" style="background:#9ece6a"></span>pivot frame C (its origin is the pivot)</div>
+        <div><span class="sw" style="background:#565f89"></span>original object</div>
+        <div><span class="sw" style="background:#7aa2f7"></span>result</div>
+        <div class="tip"><code>C&#8315;&#185;&#183;T&#183;C</code> enters C's frame with the inverse, so the pivot goes to the origin and T spins about it. <code>C&#183;T&#183;C&#8315;&#185;</code> puts the inverse on the other side and uses the mirrored centre instead.</div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/sandwich_pivot.js"></script>
+</body>
+</html>

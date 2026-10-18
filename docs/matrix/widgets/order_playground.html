@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matrix order playground</title>
+  <link rel="stylesheet" href="../css/widgets.css">
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="cv" width="620" height="440"></canvas>
+    <div class="panel">
+      <h4>Order of operations</h4>
+      <div class="orders">
+        <button id="btnAB" class="active">A * B<br><small>A applied first</small></button>
+        <button id="btnBA">B * A<br><small>B applied first</small></button>
+      </div>
+      <div class="row">
+        <label>Rotate &theta; (matrix A) <output id="oAng">35&deg;</output></label>
+        <input id="ang" type="range" min="-180" max="180" value="35" step="1">
+      </div>
+      <div class="row">
+        <label>Translate x (matrix B) <output id="oTx">120</output></label>
+        <input id="tx" type="range" min="-180" max="180" value="120" step="1">
+      </div>
+      <div class="row">
+        <label>Translate y (matrix B) <output id="oTy">60</output></label>
+        <input id="ty" type="range" min="-160" max="160" value="60" step="1">
+      </div>
+      <div class="legend">
+        <div><span class="sw" style="background:#565f89"></span>original shape</div>
+        <div><span class="sw" style="background:#7aa2f7"></span>selected order</div>
+        <div><span class="sw" style="background:#f7768e"></span>the other order (faint)</div>
+        <div class="tip">A rotation and a translation do <em>not</em> commute: A*B &ne; B*A. The dots mark where each order pivots: blue for the selected order, red for the other. Swap the order and the blue pivot jumps.</div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/order_playground.js"></script>
+</body>
+</html>
