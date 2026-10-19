@@ -23,13 +23,22 @@
         <label>Wrist (tipToHand) <output id="oWr">-35&deg;</output></label>
         <input id="wr" type="range" min="-180" max="180" value="-35" step="1">
       </div>
+      <div class="row">
+        <label>Arm X (armToWorld) <output id="oBx">0</output></label>
+        <input id="bx" type="range" min="-220" max="220" value="0" step="1">
+      </div>
+      <div class="row">
+        <label>Arm Y (armToWorld) <output id="oBy">0</output></label>
+        <input id="by" type="range" min="-180" max="180" value="0" step="1">
+      </div>
       <button id="play" class="play">Play the three multiplications</button>
       <div class="legend">
         <div><span class="sw" style="background:#9ece6a"></span>arm frame (armToWorld)</div>
         <div><span class="sw" style="background:#7dcfff"></span>hand frame (handToArm)</div>
         <div><span class="sw" style="background:#bb9af7"></span>tip frame (tipToHand)</div>
         <div><span class="sw" style="background:#7aa2f7"></span>point being carried up the chain</div>
-        <div class="tip">The point starts in tip space. Each multiply lifts it one space: <code>tipToHand</code>, then <code>handToArm</code>, then <code>armToWorld</code>. Read the code left to right the same way.</div>
+        <div><span class="sw" style="background:#7982a9"></span>dashed outline: the settled world pose</div>
+        <div class="tip">The trail changes colour with the space the point is leaving: tip, then hand, then arm. Each multiply lifts it one space (<code>tipToHand</code>, <code>handToArm</code>, <code>armToWorld</code>); read the code left to right the same way. With every angle at 0 the matrices are pure translations, so the point only slides.</div>
       </div>
     </div>
   </div>
