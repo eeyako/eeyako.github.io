@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chaining spaces: three frames deep</title>
+  <link rel="stylesheet" href="../css/widgets.css">
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="cv" width="620" height="440"></canvas>
+    <div class="panel">
+      <h4>Climb three nested spaces</h4>
+      <div class="row">
+        <label>Shoulder (armToWorld) <output id="oSh">80&deg;</output></label>
+        <input id="sh" type="range" min="-180" max="180" value="80" step="1">
+      </div>
+      <div class="row">
+        <label>Elbow (handToArm) <output id="oEl">-55&deg;</output></label>
+        <input id="el" type="range" min="-180" max="180" value="-55" step="1">
+      </div>
+      <div class="row">
+        <label>Wrist (tipToHand) <output id="oWr">-35&deg;</output></label>
+        <input id="wr" type="range" min="-180" max="180" value="-35" step="1">
+      </div>
+      <button id="play" class="play">Play the three multiplications</button>
+      <div class="legend">
+        <div><span class="sw" style="background:#9ece6a"></span>arm frame (armToWorld)</div>
+        <div><span class="sw" style="background:#7dcfff"></span>hand frame (handToArm)</div>
+        <div><span class="sw" style="background:#bb9af7"></span>tip frame (tipToHand)</div>
+        <div><span class="sw" style="background:#7aa2f7"></span>point being carried up the chain</div>
+        <div class="tip">The point starts in tip space. Each multiply lifts it one space: <code>tipToHand</code>, then <code>handToArm</code>, then <code>armToWorld</code>. Read the code left to right the same way.</div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/chain_trip.js"></script>
+</body>
+</html>

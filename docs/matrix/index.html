@@ -261,6 +261,34 @@ footTarget *= worldToBind.inverse();</code></pre>
       multiply and check that the output space of one matrix is the input space of the next. An illegal
       product (world space fed into something expecting local space) becomes obvious in the names.</p>
 
+    <h3>Three frames deep: a chain of multiplications</h3>
+
+    <p>The sandwich changes a frame and changes it straight back, so only the edit survives. Real code is
+      usually deeper: a point starts in one joint's space and climbs several parents to reach the world. Each
+      matrix connects two neighbouring spaces, and you write them in the order the point meets them:</p>
+
+    <pre><code class="language-cpp">MMatrix tipToWorld = tipToHand * handToArm * armToWorld;</code></pre>
+
+    <p>Read the chain left to right, exactly like the point travels:</p>
+
+    <ol>
+      <li><code>tipToHand</code>: tip space &rarr; the hand's space.</li>
+      <li><code>handToArm</code>: the hand's space &rarr; the arm's space.</li>
+      <li><code>armToWorld</code>: the arm's space &rarr; world.</li>
+    </ol>
+
+    <p>The neighbouring names have to match (<code>&hellip;ToHand</code> feeds <code>hand&hellip;</code>), or
+      the product is illegal: a point in the arm's space cannot be fed into a matrix that expects the
+      hand's. The leftmost matrix touches the point first, so a change there is carried and bent by every
+      matrix to its right, while a change in the last matrix acts straight in world.</p>
+
+    <p>Change any joint and watch where the point lands. It climbs one space per multiplication:</p>
+
+    <div class="embed">
+      <iframe src="widgets/chain_trip.html?v=1" title="A point climbing three nested spaces" loading="lazy"
+        onload="try{var d=this.contentDocument;this.style.height=(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight)+24)+'px';}catch(e){}"></iframe>
+    </div>
+
     <h2>Two sanity checks</h2>
 
     <p>Run these before you ever reach for trial and error.</p>
