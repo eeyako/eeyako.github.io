@@ -3,14 +3,17 @@ const MEL_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/Maya-Tech-Doc
 const OM2_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/py_ref';
 const OM_ROOT_URL = 'https://help.autodesk.com/cloudhelp/2025/ENU/MAYA-API-REF/cpp_ref';
 const QT_ROOT_URL = 'https://doc.qt.io/qt-6';
+const PXR_ROOT_URL = 'https://openusd.org/release/api';
+const PXR_INDEX_URL = 'pxr-index.json';
 
 const title = document.querySelector('.title');
 const message = document.querySelector('.message');
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-const textTimeout = 400
+const textTimeout = 400;
 
+const availableQueries = 'Available queries are: cmds, mel, om2, om, pxr, qt';
 
 async function animateText(element, text, speed = 1) {
     var textBuild = '';
@@ -41,12 +44,31 @@ async function fetchAndGo(query, rootUrl, index, selector) {
 }
 
 
+async function lookupInIndex(query, rootUrl, indexUrl) {
+    try {
+        const res = await fetch(indexUrl);
+        if (!res.ok) {
+            return false;
+        }
+        const classes = await res.json();
+        const path = classes[query];
+        if (!path) {
+            return false;
+        }
+        window.location.replace(`${rootUrl}/${path}`);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+
 async function handleUrlParams() {
     const value = urlParams.entries().next()['value'];
     if (!value) {
         setTimeout(() => {
             animateText(title, 'Error: no query requested');
-            animateText(message, 'Available queries are: cmds, mel, om2, om, qt');
+            animateText(message, availableQueries);
         }, textTimeout);
         return;
     }
@@ -54,6 +76,7 @@ async function handleUrlParams() {
     let rootUrl;
     let index;
     let selector;
+    let useIndex = false;
     const param = value[0].toLowerCase();
     const query = value[1].toLowerCase();
     switch (param) {
@@ -77,6 +100,10 @@ async function handleUrlParams() {
             index = 'annotated.html';
             selector = 'a.el';
             break;
+        case 'pxr':
+            rootUrl = PXR_ROOT_URL;
+            useIndex = true;
+            break;
         case 'qt':
             rootUrl = QT_ROOT_URL;
             window.location.replace(`${rootUrl}/${query}.html`);
@@ -84,11 +111,13 @@ async function handleUrlParams() {
         default:
             setTimeout(() => {
                 animateText(title, 'Error: Incorrect query');
-                setTimeout(() => { animateText(message, 'Available queries are: cmds, mel, om2, om'); }, textTimeout);
+                setTimeout(() => { animateText(message, availableQueries); }, textTimeout);
             }, textTimeout);
             return;
     }
-    const success = await fetchAndGo(query, rootUrl, index, selector);
+    const success = useIndex
+        ? await lookupInIndex(query, rootUrl, PXR_INDEX_URL)
+        : await fetchAndGo(query, rootUrl, index, selector);
     if (!success) {
         setTimeout(() => {
             animateText(title, 'Not found');
